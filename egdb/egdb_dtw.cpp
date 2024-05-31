@@ -25,9 +25,6 @@
 #include <ctime>
 #include <utility>
 
-#undef min
-#undef max
-
 namespace egdb_interface {
 
 #define CACHE_MINIBLOCK_LENGTHS 0
@@ -642,7 +639,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int cache_mb, const char *fi
 			/* We need more memory than he gave us, allocate 10mb of cache
 			 * buffers if we can use that many.
 			 */
-			hdat->cacheblocks = std::min(MIN_CACHE_BUF_BYTES / CACHE_BLOCKSIZE, i);
+			hdat->cacheblocks = (std::min)(MIN_CACHE_BUF_BYTES / CACHE_BLOCKSIZE, i);
 			sprintf(msg, "Allocating the minimum %d cache buffers\n",
 							hdat->cacheblocks);
 			(*hdat->log_msg_fn)(msg);
@@ -650,7 +647,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int cache_mb, const char *fi
 		else {
 			hdat->cacheblocks = (int)(((int64_t)cache_mb * (int64_t)ONE_MB - (int64_t)allocated_bytes) /
 					(int64_t)(CACHE_BLOCKSIZE + sizeof(CCB)));
-			hdat->cacheblocks = std::min(hdat->cacheblocks, i);
+			hdat->cacheblocks = (std::min)(hdat->cacheblocks, i);
 		}
 
 		/* Allocate the CCB array. */
@@ -682,7 +679,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int cache_mb, const char *fi
 
 		/* Allocate the cache buffers in groups of CACHE_ALLOC_COUNT at a time. */
 		for (i = 0; i < hdat->cacheblocks; i += CACHE_ALLOC_COUNT) {
-			count = std::min(CACHE_ALLOC_COUNT, hdat->cacheblocks - i);
+			count = (std::min)(CACHE_ALLOC_COUNT, hdat->cacheblocks - i);
 			size = count * CACHE_BLOCKSIZE * sizeof(unsigned char);
 			blockp = (unsigned char *)aligned_large_alloc(size);
 			if (blockp == NULL) {
@@ -1190,7 +1187,7 @@ static int get_pieces(EGDB_DRIVER const *handle, int *max_pieces, int *max_piece
 		if (f->pieces > *max_pieces)
 			*max_pieces = f->pieces;
 	}
-	*max_pieces_1side = std::min(MAXPIECE, *max_pieces - 1);
+	*max_pieces_1side = (std::min)(MAXPIECE, *max_pieces - 1);
 	return(0);
 }
 
