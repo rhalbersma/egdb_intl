@@ -1,6 +1,5 @@
 #pragma once
 #include "engine/board.h"
-#include <stdint.h>
 
 namespace egdb_interface {
 

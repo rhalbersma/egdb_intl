@@ -1,6 +1,6 @@
 #pragma once
 #include "egdb/platform.h"
-#include <stdint.h>
+#include <cstdint>
 
 namespace egdb_interface {
 

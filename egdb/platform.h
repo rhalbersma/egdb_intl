@@ -39,6 +39,14 @@
 	}
 
 	inline
+	int get_mem_available_kb(void)
+	{
+		MEMORYSTATUS memstat;
+		GlobalMemoryStatus(&memstat);
+		return((int)(memstat.dwAvailPhys / (1024)));
+	}
+
+	inline
 	bool check_cpu_has_popcount()
 	{
 		int cpuinfo[4] = { -1 };
@@ -75,6 +83,12 @@
 	}
 
 	inline
+	int get_mem_available_kb(void)
+	{
+		return (int)(sysconf(_SC_PHYS_PAGES) * sysconf(_SC_PAGESIZE) / (1024));
+	}
+
+	inline
 	bool check_cpu_has_popcount()
 	{
 		return __builtin_cpu_supports("popcnt");
@@ -101,7 +115,7 @@
 			return VirtualAlloc(0, size, MEM_COMMIT, PAGE_READWRITE);
 		}
 
-		inline 
+		inline
 		void virtual_free(void *ptr)
 		{
 			VirtualFree(ptr, 0, MEM_RELEASE);
@@ -163,8 +177,8 @@
 #if defined(_MSC_VER) && defined(USE_WIN_API)
 
 	#include <cassert>
-	#include <stdint.h>
-	
+	#include <cstdint>
+
 	namespace egdb_interface {
 
 	typedef HANDLE		FILE_HANDLE;
@@ -221,7 +235,7 @@
 	}	// namespace
 #else
 
-	#include <stdint.h>
+	#include <cstdint>
 	#include <cstdio>
 
 	namespace egdb_interface {
@@ -241,7 +255,7 @@
 	#ifdef _MSC_VER
 		// On both 32-bit and 64-bit Windows, a <long> is 32-bit, not 64-bit
 
-		#include <stdio.h>
+		#include <cstdio>
 
 		namespace egdb_interface {
 
@@ -317,12 +331,12 @@
 
 #ifdef _MSC_VER
 
+	#include <cstdint>
 	#include <intrin.h>
-	#include <stdint.h>
 
 	namespace egdb_interface {
 
-	inline 
+	inline
 	int bit_scan_forward(uint32_t x)
 	{
 		unsigned long bitpos;
@@ -356,7 +370,7 @@
 
 		namespace egdb_interface {
 
-		inline 
+		inline
 		int bit_scan_forward64(uint64_t x)
 		{
 			unsigned long bitpos;
@@ -367,7 +381,7 @@
 				return(0);
 		}
 
-		inline 
+		inline
 		int bit_scan_reverse64(uint64_t x)
 		{
 			unsigned long bitpos;
@@ -388,9 +402,9 @@
 
 	#endif
 
-#else 
+#else
 
-	#include <stdint.h>
+	#include <cstdint>
 
 	namespace egdb_interface {
 
@@ -448,17 +462,47 @@
 
 #ifdef _MSC_VER
 
-	#include <string.h>
+	#include <cstring>
 
 	namespace egdb_interface {
-	
-	inline 
+
+	inline
 	int strcasecmp(char const *a, char const *b) { return _stricmp(a, b); }
 
 	}	// namespace
 
 #else
 
-	#include<string.h>	// provides strcasecmp
+	#include<cstring>	// provides strcasecmp
+
+#endif
+
+// -------
+// Timer
+// -------
+
+#ifdef _MSC_VER
+
+	#include <intrin.h>
+	#include <Windows.h>
+
+	inline
+	uint32_t get_tick_count()
+	{
+		return GetTickCount();
+	}
+
+#else
+
+	// https://stackoverflow.com/a/24959236/ (answer by <chrono> author Howard Hinnant)
+
+	#include <chrono>
+
+	inline
+	uint32_t get_tick_count()
+	{
+		using namespace std::chrono;
+		return duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count();
+	}
 
 #endif

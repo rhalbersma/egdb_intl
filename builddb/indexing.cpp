@@ -6,7 +6,7 @@
 #include "engine/bool.h"
 #include "engine/project.h"
 #include <algorithm>
-#include <stdint.h>
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 

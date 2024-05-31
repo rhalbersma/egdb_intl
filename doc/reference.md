@@ -14,7 +14,7 @@
 ---
 
 ### `egdb_interface::EGDB_BITBOARD`
-    #include <stdint.h>    
+    #include <cstdint>    
     typedef uint64_t EGDB_BITBOARD;
     
 **Notes**: For 10x10 board representations, bits 0 through 53 represent squares 1 through 50, with gaps (sometimes called "ghost squares") at bits 10, 21, 32, and 43, and bits 54 through 63. See also [this thread](http://laatste.info/bb3/viewtopic.php?f=53&t=1925&start=60) on the FMJD forum.   
@@ -105,7 +105,7 @@ Note that depending on the position and the database type, you sometimes cannot 
 
     void msg_fn(char const *msg)
     {
-        printf("%s", msg);
+        std::printf("%s", msg);
     }
 
 **Returns**: An `EGDB_DRIVER*` for subsequent communication with the driver. A `NULL` pointer return value means that an error occurred. 

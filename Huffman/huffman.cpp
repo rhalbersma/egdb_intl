@@ -1,8 +1,8 @@
 #include <algorithm>
+#include <cassert>
 #include <list>
-#include <assert.h>
-#include "huffman.h"
 #include "bitbuf.h"
+#include "huffman.h"
 
 
 static int compare_codetable_entries(const void *p1, const void *p2);
@@ -161,7 +161,7 @@ std::string Huffman::binary_format(uint32_t code, int length, int formatted_widt
 void Huffman::print_codetable(void)
 {
 	for (size_t i = 0; i < codetable.size(); ++i)
-		printf("sym %4d,  codelength %2d,  code 0x%08x (%s),  freq %10u\n", 
+		std::printf("sym %4d,  codelength %2d,  code 0x%08x (%s),  freq %10u\n", 
 				codetable[i].value,
 				codetable[i].codelength, 
 				left_justify32(codetable[i].huffcode, codetable[i].codelength), 
@@ -222,42 +222,42 @@ int Huffman::write_header_file(char *base_filename, uint32_t input_length)
 	FILE *fp;
 
 	filename = std::string(base_filename) + ".hdr";
-	fp = fopen(filename.c_str(), "wb");
+	fp = std::fopen(filename.c_str(), "wb");
 	if (!fp) {
-		printf("Cannot open %s for writing\n", filename.c_str());
+		std::printf("Cannot open %s for writing\n", filename.c_str());
 		return(1);
 	}
 
 	/* Write the total length of the uncompressed file. */
-	status = fwrite(&input_length, sizeof(input_length), 1, fp);
+	status = std::fwrite(&input_length, sizeof(input_length), 1, fp);
 	if (status != 1) {
-		printf("Error writing to header file.\n");
+		std::printf("Error writing to header file.\n");
 		return(1);
 	}
 
 	/* Write the number of distinct symbols (codes) in the file. */
 	uint32_t nsyms = (uint32_t)codetable.size();
-	status = fwrite(&nsyms, sizeof(nsyms), 1, fp);
+	status = std::fwrite(&nsyms, sizeof(nsyms), 1, fp);
 	if (status != 1) {
-		printf("Error writing to header file.\n");
+		std::printf("Error writing to header file.\n");
 		return(1);
 	}
 
 	/* Write each symbol value and its length. */
 	for (i = 0; i < codetable.size(); ++i) {
-		status = fwrite(&codetable[i].value, sizeof(codetable[i].value), 1, fp);
+		status = std::fwrite(&codetable[i].value, sizeof(codetable[i].value), 1, fp);
 		if (status != 1) {
-			printf("Error writing to header file.\n");
+			std::printf("Error writing to header file.\n");
 			return(1);
 		}
-		status = fwrite(&codetable[i].codelength, sizeof(codetable[i].codelength), 1, fp);
+		status = std::fwrite(&codetable[i].codelength, sizeof(codetable[i].codelength), 1, fp);
 		if (status != 1) {
-			printf("Error writing to header file.\n");
+			std::printf("Error writing to header file.\n");
 			return(1);
 		}
 	}
 
-	fclose(fp);
+	std::fclose(fp);
 	return(0);
 }
 
@@ -270,23 +270,23 @@ int Huffman::read_header_file(char *base_filename, uint32_t &uncompressed_length
 	FILE *fp;
 
 	filename = std::string(base_filename) + ".hdr";
-	fp = fopen(filename.c_str(), "rb");
+	fp = std::fopen(filename.c_str(), "rb");
 	if (!fp) {
-		printf("Cannot open %s for reading\n", filename.c_str());
+		std::printf("Cannot open %s for reading\n", filename.c_str());
 		return(1);
 	}
 
 	/* Read the total length of the uncompressed file. */
-	status = fread(&uncompressed_length, sizeof(uncompressed_length), 1, fp);
+	status = std::fread(&uncompressed_length, sizeof(uncompressed_length), 1, fp);
 	if (status != 1) {
-		printf("Error reading header file.\n");
+		std::printf("Error reading header file.\n");
 		return(1);
 	}
 
 	/* Read the number of distinct symbols (codes) in the file. */
-	status = fread(&nsyms, sizeof(nsyms), 1, fp);
+	status = std::fread(&nsyms, sizeof(nsyms), 1, fp);
 	if (status != 1) {
-		printf("Error reading header file.\n");
+		std::printf("Error reading header file.\n");
 		return(1);
 	}
 
@@ -295,20 +295,20 @@ int Huffman::read_header_file(char *base_filename, uint32_t &uncompressed_length
 	for (i = 0; i < nsyms; ++i) {
 		Codetable entry = {0, 0, 0, 0};
 
-		status = fread(&entry.value, sizeof(entry.value), 1, fp);
+		status = std::fread(&entry.value, sizeof(entry.value), 1, fp);
 		if (status != 1) {
-			printf("Error reading header file.\n");
+			std::printf("Error reading header file.\n");
 			return(1);
 		}
-		status = fread(&entry.codelength, sizeof(entry.codelength), 1, fp);
+		status = std::fread(&entry.codelength, sizeof(entry.codelength), 1, fp);
 		if (status != 1) {
-			printf("Error reading header file.\n");
+			std::printf("Error reading header file.\n");
 			return(1);
 		}
 		codetable.push_back(entry);
 	}
 
-	fclose(fp);
+	std::fclose(fp);
 	return(0);
 }
 
@@ -430,11 +430,11 @@ void Huffman::compress(char *base_filename, bool iswide, bool verify)
 	if (verify) {
 		decompress(base_filename, uncompressed);
 		if (input.size() != uncompressed.size()) {
-			printf("Input size %zd, compressed size %zd\n", input.size(), uncompressed.size());
+			std::printf("Input size %zd, compressed size %zd\n", input.size(), uncompressed.size());
 		}
 		for (size_t i = 0; i < input.size(); ++i) {
 			if (input[i] != uncompressed[i]) {
-				printf("Values[%zd] don't match; input %u, uncompressed %u\n", 
+				std::printf("Values[%zd] don't match; input %u, uncompressed %u\n", 
 						i, input[i], uncompressed[i]);
 			}
 		}
@@ -470,14 +470,14 @@ void Huffman::read_input(char *filename, bool iswide, std::vector<Value> &input)
 {
 	FILE *fp;
 
-	fp = fopen(filename, "rb");
+	fp = std::fopen(filename, "rb");
 	if (!fp) {
-		printf("Cannot open file %s\n", filename);
-		exit(1);
+		std::printf("Cannot open file %s\n", filename);
+		std::exit(1);
 	}
 	if (iswide) {
 		uint16_t inchar;
-		while (fread(&inchar, sizeof(inchar), 1, fp) == 1)
+		while (std::fread(&inchar, sizeof(inchar), 1, fp) == 1)
 			input.push_back(inchar);
 	}
 	else {
@@ -486,7 +486,7 @@ void Huffman::read_input(char *filename, bool iswide, std::vector<Value> &input)
 			input.push_back(inchar);
 	}
 
-	fclose(fp);
+	std::fclose(fp);
 }
 
 

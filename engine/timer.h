@@ -1,10 +1,13 @@
 #pragma once
-#include <Windows.h>
 #include <chrono>
+
+#ifdef _MSC_VER
+
+#include <Windows.h>
 
 class QPCTimer {
 public:
-	QPCTimer() {QueryPerformanceFrequency(&frequency);} 
+	QPCTimer() {QueryPerformanceFrequency(&frequency);}
 	void reset(void) {QueryPerformanceCounter(&t0);}
 	double elapsed_usec(void) {
 		LARGE_INTEGER t1, delta_time;
@@ -20,6 +23,7 @@ private:
 	LARGE_INTEGER t0;
 };
 
+#endif
 
 class Timer {
 public:
