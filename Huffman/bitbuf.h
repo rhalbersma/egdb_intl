@@ -1,7 +1,7 @@
 #pragma once
-#include <stdio.h>
-#include <stdint.h>
-#include <assert.h>
+#include <cassert>
+#include <cstdio>
+#include <cstdint>
 
 class Bitbuf {
 public:

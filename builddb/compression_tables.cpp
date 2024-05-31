@@ -1,6 +1,6 @@
 #include "builddb/compression_tables.h"
 #include "egdb/egdb_intl.h"
-#include <stdlib.h>
+#include <cstdlib>
 
 namespace egdb_interface {
 

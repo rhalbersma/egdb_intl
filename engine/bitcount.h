@@ -1,7 +1,7 @@
 #pragma once
 #include "egdb/platform.h"
 #include <cassert>
-#include <stdint.h>
+#include <cstdint>
 
 namespace egdb_interface {
 

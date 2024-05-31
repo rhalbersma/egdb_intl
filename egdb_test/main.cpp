@@ -12,12 +12,12 @@
 #include "engine/project.h"	// ARRAY_SIZE
 #include <algorithm>
 #include <cctype>
-#include <stdint.h>
+#include <cinttypes>
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
-#include <inttypes.h>
 #include <mutex>
 
 #ifdef USE_MULTI_THREADING
@@ -27,10 +27,13 @@
 using namespace egdb_interface;
 
 #define FAST_TEST_MULT 1		/* Set to 5 to speed up the tests. */
-#define HAVE_TUN_V1 0
 
-#define EYG
+//#define EYG
 #ifdef EYG
+
+#define HAVE_RUNLEN 1
+#define HAVE_TUN_V1 1
+
 	#ifdef _MSC_VER
 		// drive name where Kingsrow is installed under Windows
 		#define C_DRIVE "C:/"
@@ -48,25 +51,31 @@ using namespace egdb_interface;
 const int maxpieces = 8;
 #endif
 
-//#define RH
+#define RH
 #ifdef RH
+
+	#define HAVE_RUNLEN 0
+	#define HAVE_TUN_V1 0
+
 	#ifdef _MSC_VER
 		// drive name where Kingsrow is installed under Windows
 		#define DRIVE_MAPPING "C:/"
+		
+		// path on DRIVE_MAPPING where Kingsrow is installed
+		#define KINGSROW_PATH "Program Files/Kingsrow International/"
 	#else
-		// VirtualBox virtual drive mapping
-		#define DRIVE_MAPPING "/media/sf_C_DRIVE/"
+		// VMWare virtual drive mapping
+		#define DRIVE_MAPPING "/home/rein/"
+
+		// path on DRIVE_MAPPING where Kingsrow is installed
+		#define KINGSROW_PATH "Kingsrow/"
 	#endif
 
-	// path on DRIVE_MAPPING where Kingsrow is installed
-	#define KINGSROW_PATH "Program Files/Kingsrow International/"
-
 	// locations of the various databaess
-	#define DB_RUNLEN	DRIVE_MAPPING KINGSROW_PATH "wld_runlen"	/* Need 6 pieces for test. */
-	#define DB_TUN_V1	DRIVE_MAPPING KINGSROW_PATH "wld_tun_v1"	/* Need 7 pieces for test. */
 	#define DB_TUN_V2	DRIVE_MAPPING KINGSROW_PATH "wld_database"	/* Need 8 pieces for test. */
 	#define DB_MTC		DRIVE_MAPPING KINGSROW_PATH "mtc_database"	/* Need 8 pieces for test. */
-	const int maxpieces = 7;
+	#define DB_DTW		DRIVE_MAPPING KINGSROW_PATH "dtw_database" 
+	const int maxpieces = 8;
 #endif
 
 #define TDIFF(start) (((double)(std::clock() + 1 - start)) / (double)CLOCKS_PER_SEC)
@@ -660,6 +669,8 @@ int main(int argc, char *argv[])
 	// Close db2, leave db1 open for the next test.
 	egdb_close(db2.handle);
 #endif
+
+#if HAVE_RUNLEN
 	std::printf("\nVerifying WLD runlen against WLD Tunstall v2 (up to 6 pieces).\n");
 	if (identify(DB_RUNLEN, &db2))
 		return(1);
@@ -675,9 +686,10 @@ int main(int argc, char *argv[])
 		std::printf("%.2fsec: ", TDIFF(t0));
 		verify(&db1, &db2, first, 50000 / FAST_TEST_MULT);
 	}
+	egdb_close(db2.handle);
+#endif
 
 	egdb_close(db1.handle);
-	egdb_close(db2.handle);
 
 	std::printf("\nSelf-verify Tunstall v2 test.\n");
 	if (identify(DB_TUN_V2, &db1))

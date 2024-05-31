@@ -20,13 +20,16 @@ using namespace egdb_interface;
 	#ifdef _MSC_VER
 		// drive name where Kingsrow is installed under Windows
 		#define DRIVE_MAPPING "C:/"
+		
+		// path on DRIVE_MAPPING where Kingsrow is installed
+		#define KINGSROW_PATH "Program Files/Kingsrow International/"
 	#else
-		// VirtualBox virtual drive mapping
-		#define DRIVE_MAPPING "/media/sf_C_DRIVE/"
-	#endif
+		// VMWare virtual drive mapping
+		#define DRIVE_MAPPING "/home/rein/"
 
-	// path on DRIVE_MAPPING where Kingsrow is installed
-	#define KINGSROW_PATH "Program Files/Kingsrow International/"
+		// path on DRIVE_MAPPING where Kingsrow is installed
+		#define KINGSROW_PATH "Kingsrow/"
+	#endif
 
 	// location of the database
 	#define PATH_WLD	DRIVE_MAPPING KINGSROW_PATH "wld_database"

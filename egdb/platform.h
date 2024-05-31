@@ -177,7 +177,7 @@
 #if defined(_MSC_VER) && defined(USE_WIN_API)
 
 	#include <cassert>
-	#include <stdint.h>
+	#include <cstdint>
 
 	namespace egdb_interface {
 
@@ -235,7 +235,7 @@
 	}	// namespace
 #else
 
-	#include <stdint.h>
+	#include <cstdint>
 	#include <cstdio>
 
 	namespace egdb_interface {
@@ -255,7 +255,7 @@
 	#ifdef _MSC_VER
 		// On both 32-bit and 64-bit Windows, a <long> is 32-bit, not 64-bit
 
-		#include <stdio.h>
+		#include <cstdio>
 
 		namespace egdb_interface {
 
@@ -331,8 +331,8 @@
 
 #ifdef _MSC_VER
 
+	#include <cstdint>
 	#include <intrin.h>
-	#include <stdint.h>
 
 	namespace egdb_interface {
 
@@ -404,7 +404,7 @@
 
 #else
 
-	#include <stdint.h>
+	#include <cstdint>
 
 	namespace egdb_interface {
 
@@ -462,7 +462,7 @@
 
 #ifdef _MSC_VER
 
-	#include <string.h>
+	#include <cstring>
 
 	namespace egdb_interface {
 
@@ -473,7 +473,7 @@
 
 #else
 
-	#include<string.h>	// provides strcasecmp
+	#include<cstring>	// provides strcasecmp
 
 #endif
 
@@ -494,18 +494,15 @@
 
 #else
 
-	#include <unistd.h>
-	#include <time.h>
+	// https://stackoverflow.com/a/24959236/ (answer by <chrono> author Howard Hinnant)
+
+	#include <chrono>
 
 	inline
 	uint32_t get_tick_count()
 	{
-		struct timespec ts;
-		unsigned theTick = 0U;
-		clock_gettime( CLOCK_REALTIME, &ts );
-		theTick  = ts.tv_nsec / 1000000;
-		theTick += ts.tv_sec * 1000;
-		return theTick;
+		using namespace std::chrono;
+		return duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count();
 	}
 
 #endif

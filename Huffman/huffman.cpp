@@ -1,8 +1,8 @@
 #include <algorithm>
+#include <cassert>
 #include <list>
-#include <assert.h>
-#include "huffman.h"
 #include "bitbuf.h"
+#include "huffman.h"
 
 
 static int compare_codetable_entries(const void *p1, const void *p2);
