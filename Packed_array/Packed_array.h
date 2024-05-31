@@ -3,8 +3,8 @@
 #include <cassert>
 #include <cstdlib>
 #include <cstdint>
+#include <cstring>
 #include <exception>
-#include <string.h>
 
 
 class Packed_array {
