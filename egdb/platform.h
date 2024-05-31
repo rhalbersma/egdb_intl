@@ -177,7 +177,7 @@
 #if defined(_MSC_VER) && defined(USE_WIN_API)
 
 	#include <cassert>
-	#include <stdint.h>
+	#include <cstdint>
 
 	namespace egdb_interface {
 
@@ -235,7 +235,7 @@
 	}	// namespace
 #else
 
-	#include <stdint.h>
+	#include <cstdint>
 	#include <cstdio>
 
 	namespace egdb_interface {
@@ -255,7 +255,7 @@
 	#ifdef _MSC_VER
 		// On both 32-bit and 64-bit Windows, a <long> is 32-bit, not 64-bit
 
-		#include <stdio.h>
+		#include <cstdio>
 
 		namespace egdb_interface {
 
@@ -331,8 +331,8 @@
 
 #ifdef _MSC_VER
 
+	#include <cstdint>
 	#include <intrin.h>
-	#include <stdint.h>
 
 	namespace egdb_interface {
 
@@ -404,7 +404,7 @@
 
 #else
 
-	#include <stdint.h>
+	#include <cstdint>
 
 	namespace egdb_interface {
 

@@ -1,6 +1,6 @@
 #include "engine/bicoef.h"
 #include <algorithm>
-#include <stdint.h>
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 

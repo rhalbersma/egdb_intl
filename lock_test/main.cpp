@@ -1,7 +1,7 @@
 #include "egdb/platform.h"
+#include <cinttypes>
 #include <cstdint>
 #include <ctime>
-#include <inttypes.h>
 #include <mutex>
 #include <thread>
 

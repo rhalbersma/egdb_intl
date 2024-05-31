@@ -12,12 +12,12 @@
 #include "engine/project.h"	// ARRAY_SIZE
 #include <algorithm>
 #include <cctype>
-#include <stdint.h>
+#include <cinttypes>
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
-#include <inttypes.h>
 #include <mutex>
 
 #ifdef USE_MULTI_THREADING

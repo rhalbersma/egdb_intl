@@ -1,10 +1,10 @@
 #pragma once
 #include <algorithm>
-#include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
+#include <cassert>
+#include <cstdlib>
+#include <cstdint>
 #include <exception>
-#include <assert.h>
+#include <string.h>
 
 
 class Packed_array {

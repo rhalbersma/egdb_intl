@@ -1,8 +1,8 @@
 #pragma once
-#include <stdint.h>
+#include <cstdint>
+#include <list>
 #include <string>
 #include <vector>
-#include <list>
 
 struct Huffcode {
 	uint16_t value;
