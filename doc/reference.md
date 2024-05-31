@@ -105,7 +105,7 @@ Note that depending on the position and the database type, you sometimes cannot 
 
     void msg_fn(char const *msg)
     {
-        printf("%s", msg);
+        std::printf("%s", msg);
     }
 
 **Returns**: An `EGDB_DRIVER*` for subsequent communication with the driver. A `NULL` pointer return value means that an error occurred. 

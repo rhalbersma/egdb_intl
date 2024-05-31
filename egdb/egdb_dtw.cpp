@@ -160,7 +160,7 @@ struct DBHANDLE {
 		if (fmt == NULL)
 			return;
 
-		vsprintf(buf, fmt, args);
+		std::vsprintf(buf, fmt, args);
 		log_msg_fn(buf);
 	}
 };
@@ -531,7 +531,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int cache_mb, const char *fi
 	allocated_bytes = 0;
 
 	/* Get the pagesize info. */
-	sprintf(msg, "There are %d kbytes of ram available.\n", get_mem_available_kb());
+	std::sprintf(msg, "There are %d kbytes of ram available.\n", get_mem_available_kb());
 	(*hdat->log_msg_fn)(msg);
 
 	init_bitcount();
@@ -581,7 +581,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int cache_mb, const char *fi
 
 	/* End of reading index files. */
 	t1 = get_tick_count();
-	sprintf(msg, "Reading index files took %d secs\n", (t1 - t0) / 1000);
+	std::sprintf(msg, "Reading index files took %d secs\n", (t1 - t0) / 1000);
 	(*hdat->log_msg_fn)(msg);
 
 	/* Find the total size of all the files that will be used. */
@@ -605,10 +605,10 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int cache_mb, const char *fi
 		if (!hdat->dbfiles[i].is_present)
 			continue;
 
-		sprintf(dbname, "%s%s.cpr_dtw", hdat->db_filepath, hdat->dbfiles[i].name);
+		std::sprintf(dbname, "%s%s.cpr_dtw", hdat->db_filepath, hdat->dbfiles[i].name);
 		hdat->dbfiles[i].fp = open_file(dbname);
 		if (!hdat->dbfiles[i].fp) {
-			sprintf(msg, "Cannot open %s\n", dbname);
+			std::sprintf(msg, "Cannot open %s\n", dbname);
 			(*hdat->log_msg_fn)(msg);
 			return(1);
 		}
@@ -628,7 +628,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int cache_mb, const char *fi
 		for (j = 0; j < hdat->dbfiles[i].num_cacheblocks; ++j)
 			hdat->dbfiles[i].cache_bufferi[j] = UNDEFINED_BLOCK_ID;
 	}
-	sprintf(msg, "Allocated %dkb for indexing\n", (int)((allocated_bytes) / 1024));
+	std::sprintf(msg, "Allocated %dkb for indexing\n", (int)((allocated_bytes) / 1024));
 	(*hdat->log_msg_fn)(msg);
 
 	/* Figure out how much ram is left for lru cache buffers. */
@@ -640,7 +640,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int cache_mb, const char *fi
 			 * buffers if we can use that many.
 			 */
 			hdat->cacheblocks = (std::min)(MIN_CACHE_BUF_BYTES / CACHE_BLOCKSIZE, i);
-			sprintf(msg, "Allocating the minimum %d cache buffers\n",
+			std::sprintf(msg, "Allocating the minimum %d cache buffers\n",
 							hdat->cacheblocks);
 			(*hdat->log_msg_fn)(msg);
 		}
@@ -672,7 +672,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int cache_mb, const char *fi
 		hdat->ccbs_top = 0;
 
 		if (hdat->cacheblocks > 0) {
-			sprintf(msg, "Allocating %d cache buffers of size %d\n",
+			std::sprintf(msg, "Allocating %d cache buffers of size %d\n",
 						hdat->cacheblocks, CACHE_BLOCKSIZE);
 			(*hdat->log_msg_fn)(msg);
 		}
@@ -693,13 +693,13 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int cache_mb, const char *fi
 		}
 
 		t3 = get_tick_count();
-		sprintf(msg, "Egdb init took %d sec total\n", (t3 - t0) / 1000);
+		std::sprintf(msg, "Egdb init took %d sec total\n", (t3 - t0) / 1000);
 		(*hdat->log_msg_fn)(msg);
 	}
 	else
 		hdat->cacheblocks = 0;
 
-	sprintf(msg, "There are %d kbytes of ram available.\n", get_mem_available_kb());
+	std::sprintf(msg, "There are %d kbytes of ram available.\n", get_mem_available_kb());
 	(*hdat->log_msg_fn)(msg);
 
 	return(0);
@@ -740,7 +740,7 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int64_t *allocated_bytes)
 	const bool verbose = false;
 
 	/* Open the compressed data file. */
-	sprintf(name, "%s%s.cpr_dtw", hdat->db_filepath, f->name);
+	std::sprintf(name, "%s%s.cpr_dtw", hdat->db_filepath, f->name);
 	cprfp = open_file(name);
 	if (!cprfp) {
 
@@ -748,12 +748,12 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int64_t *allocated_bytes)
 		 * this is for more pieces than SAME_PIECES_ONE_FILE pieces.
 		 */
 		if (f->pieces > SAME_PIECES_ONE_FILE) {
-			sprintf(msg, "%s not present\n", name);
+			std::sprintf(msg, "%s not present\n", name);
 			(*hdat->log_msg_fn)(msg);
 			return(0);
 		}
 		else {
-			sprintf(msg, "Cannot open %s\n", name);
+			std::sprintf(msg, "Cannot open %s\n", name);
 			(*hdat->log_msg_fn)(msg);
 			return(1);
 		}
@@ -767,15 +767,15 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int64_t *allocated_bytes)
 
 	/* Close the file. */
 	if (!close_file(cprfp)) {
-		sprintf(msg, "Error from close_file\n");
+		std::sprintf(msg, "Error from close_file\n");
 		(*hdat->log_msg_fn)(msg);
 		return(1);
 	}
 
-	sprintf(name, "%s%s.idx_dtw", hdat->db_filepath, f->name);
-	fp = fopen(name, "rb");
+	std::sprintf(name, "%s%s.idx_dtw", hdat->db_filepath, f->name);
+	fp = std::fopen(name, "rb");
 	if (fp == 0) {
-		sprintf(msg, "cannot open index file %s\n", name);
+		std::sprintf(msg, "cannot open index file %s\n", name);
 		(*hdat->log_msg_fn)(msg);
 		return(1);
 	}
@@ -791,16 +791,16 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int64_t *allocated_bytes)
 		/* Read the subslice info:
 		 * (uint8 npieces, uint8 nbm, uint8 nbk, uint8 nwm, uint8 nwk, uint8 color, uint16 subslicenum)
 		 */
-		if (fread(&subslice, sizeof(subslice), 1, fp) != 1)
+		if (std::fread(&subslice, sizeof(subslice), 1, fp) != 1)
 			break;			/* Done if end of file here. */
-		if (fread(&subslice_num, sizeof(subslice_num), 1, fp) != 1) {
-			sprintf(msg, "Error reading subslice data %s\n", name);
+		if (std::fread(&subslice_num, sizeof(subslice_num), 1, fp) != 1) {
+			std::sprintf(msg, "Error reading subslice data %s\n", name);
 			(*hdat->log_msg_fn)(msg);
 			return(1);
 		}
 		uint8_t permutation;
-		if (fread(&permutation, sizeof(permutation), 1, fp) != 1) {
-			sprintf(msg, "Error reading permutation %s\n", name);
+		if (std::fread(&permutation, sizeof(permutation), 1, fp) != 1) {
+			std::sprintf(msg, "Error reading permutation %s\n", name);
 			(*hdat->log_msg_fn)(msg);
 			return(1);
 		}
@@ -811,7 +811,7 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int64_t *allocated_bytes)
 		nwk = subslice[4];
 		color = subslice[5];
 		if (subslice[0] != nbm + nbk + nwm + nwk) {
-			sprintf(msg, "Index file %s header inconsistent\n", name);
+			std::sprintf(msg, "Index file %s header inconsistent\n", name);
 			(*hdat->log_msg_fn)(msg);
 			return(1);
 		}
@@ -836,8 +836,8 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int64_t *allocated_bytes)
 
 		/* Read the repair data. */
 		uint16_t nsyms;
-		if (fread(&nsyms, sizeof(nsyms), 1, fp) != 1) {
-			sprintf(msg, "Error in %s reading nsyms\n", name);
+		if (std::fread(&nsyms, sizeof(nsyms), 1, fp) != 1) {
+			std::sprintf(msg, "Error in %s reading nsyms\n", name);
 			(*hdat->log_msg_fn)(msg);
 			return(1);
 		}
@@ -846,13 +846,13 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int64_t *allocated_bytes)
 		for (size_t i = 0; i < nsyms; ++i) {
 			Repair::Rule rpsym;
 
-			if (fread(&rpsym.left, sizeof(rpsym.left), 1, fp) != 1) {
-				sprintf(msg, "Error reading rp syms from %s\n", name);
+			if (std::fread(&rpsym.left, sizeof(rpsym.left), 1, fp) != 1) {
+				std::sprintf(msg, "Error reading rp syms from %s\n", name);
 				(*hdat->log_msg_fn)(msg);
 				return(1);
 			}
-			if (fread(&rpsym.right, sizeof(rpsym.right), 1, fp) != 1) {
-				sprintf(msg, "Error reading rp syms from %s\n", name);
+			if (std::fread(&rpsym.right, sizeof(rpsym.right), 1, fp) != 1) {
+				std::sprintf(msg, "Error reading rp syms from %s\n", name);
 				(*hdat->log_msg_fn)(msg);
 				return(1);
 			}
@@ -864,8 +864,8 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int64_t *allocated_bytes)
 		*allocated_bytes += dbpointer->repair_lengths.size() * sizeof(dbpointer->repair_lengths[0]);
 
 		/* Read the Huffman data. */
-		if (fread(&nsyms, sizeof(nsyms), 1, fp) != 1) {
-			sprintf(msg, "Error in %s reading nsyms\n", name);
+		if (std::fread(&nsyms, sizeof(nsyms), 1, fp) != 1) {
+			std::sprintf(msg, "Error in %s reading nsyms\n", name);
 			(*hdat->log_msg_fn)(msg);
 			return(1);
 		}
@@ -874,13 +874,13 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int64_t *allocated_bytes)
 			Huffcode huffcode;
 
 			huffcode.huffcode = 0;
-			if (fread(&huffcode.value, sizeof(huffcode.value), 1, fp) != 1) {
-				sprintf(msg, "Error reading huffcodes from %s\n", name);
+			if (std::fread(&huffcode.value, sizeof(huffcode.value), 1, fp) != 1) {
+				std::sprintf(msg, "Error reading huffcodes from %s\n", name);
 				(*hdat->log_msg_fn)(msg);
 				return(1);
 			}
-			if (fread(&huffcode.codelength, sizeof(huffcode.codelength), 1, fp) != 1) {
-				sprintf(msg, "Error reading huffcodes from %s\n", name);
+			if (std::fread(&huffcode.codelength, sizeof(huffcode.codelength), 1, fp) != 1) {
+				std::sprintf(msg, "Error reading huffcodes from %s\n", name);
 				(*hdat->log_msg_fn)(msg);
 				return(1);
 			}
@@ -893,21 +893,21 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int64_t *allocated_bytes)
 		*allocated_bytes += dbpointer->lengthtable.size() * sizeof(dbpointer->lengthtable[0]);
 
 		/* Read the start blocknum. */
-		if (fread(&dbpointer->first_idx_block, sizeof(dbpointer->first_idx_block), 1, fp) != 1) {
-			sprintf(msg, "Error reading start blocknum from %s\n", name);
+		if (std::fread(&dbpointer->first_idx_block, sizeof(dbpointer->first_idx_block), 1, fp) != 1) {
+			std::sprintf(msg, "Error reading start blocknum from %s\n", name);
 			(*hdat->log_msg_fn)(msg);
 			return(1);
 		}
 
-		if (fread(&dbpointer->first_miniblock, sizeof(dbpointer->first_miniblock), 1, fp) != 1) {
-			sprintf(msg, "Error reading first miniblock num from %s\n", name);
+		if (std::fread(&dbpointer->first_miniblock, sizeof(dbpointer->first_miniblock), 1, fp) != 1) {
+			std::sprintf(msg, "Error reading first miniblock num from %s\n", name);
 			(*hdat->log_msg_fn)(msg);
 			return(1);
 		}
 
 		/* Read the number of index blocks. */
-		if (fread(&dbpointer->num_idx_blocks, sizeof(dbpointer->num_idx_blocks), 1, fp) != 1) {
-			sprintf(msg, "Error reading num blocks from %s\n", name);
+		if (std::fread(&dbpointer->num_idx_blocks, sizeof(dbpointer->num_idx_blocks), 1, fp) != 1) {
+			std::sprintf(msg, "Error reading num blocks from %s\n", name);
 			(*hdat->log_msg_fn)(msg);
 			return(1);
 		}
@@ -916,8 +916,8 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int64_t *allocated_bytes)
 
 		/* Read the number of miniblocks. */
 		uint32_t nminis;
-		if (fread(&nminis, sizeof(nminis), 1, fp) != 1) {
-			sprintf(msg, "Error reading num mini blocks from %s\n", name);
+		if (std::fread(&nminis, sizeof(nminis), 1, fp) != 1) {
+			std::sprintf(msg, "Error reading num mini blocks from %s\n", name);
 			(*hdat->log_msg_fn)(msg);
 			return(1);
 		}
@@ -928,9 +928,9 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int64_t *allocated_bytes)
 		dbpointer->miniblock_lengths_offset = ftell(dbpointer->file->fp_idx);
 		dbpointer->miniblock_lengths_size = nminis;
 #endif
-		size_t bytes_read = fread(dbpointer->miniblock_lengths.raw_buf(), 1, dbpointer->miniblock_lengths.raw_size(), fp);
+		size_t bytes_read = std::fread(dbpointer->miniblock_lengths.raw_buf(), 1, dbpointer->miniblock_lengths.raw_size(), fp);
 		if (bytes_read != dbpointer->miniblock_lengths.raw_size()) {
-			sprintf(msg, "Error reading miniblock data from %s\n", name);
+			std::sprintf(msg, "Error reading miniblock data from %s\n", name);
 			(*hdat->log_msg_fn)(msg);
 			return(1);
 		}
@@ -969,11 +969,11 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int64_t *allocated_bytes)
 	}
 
 #if CACHE_MINIBLOCK_LENGTHS
-		fclose(fp);
+		std::fclose(fp);
 #endif
 
 	int blocks = (total_minis % minis_per_block) ? 1 + total_minis / minis_per_block : total_minis / minis_per_block;
-	sprintf(msg, "%10d index blocks: %s\n", blocks, name);
+	std::sprintf(msg, "%10d index blocks: %s\n", blocks, name);
 	(*hdat->log_msg_fn)(msg);
 
 	return(0);
@@ -998,7 +998,7 @@ static void build_file_table(DBHANDLE *hdat, int maxpieces, int maxpiece, int sa
 	hdat->dbfiles.clear();
 	for (npieces = 2; npieces <= maxpieces; ++npieces) {
 		if (npieces <= same_pieces_one_file) {
-			sprintf(file.name, "db%d", npieces);
+			std::sprintf(file.name, "db%d", npieces);
 			file.pieces = npieces;
 			file.fp = nullptr;
 			file.cache_bufferi = nullptr;
@@ -1020,7 +1020,7 @@ static void build_file_table(DBHANDLE *hdat, int maxpieces, int maxpiece, int sa
 						if (nbm + nbk == nwm + nwk && nwk > nbk)
 							continue;
 
-						sprintf(file.name, "db%d-%d%d%d%d",
+						std::sprintf(file.name, "db%d-%d%d%d%d",
 							npieces, nbm, nbk, nwm, nwk);
 						file.pieces = npieces;
 						file.fp = nullptr;
@@ -1068,7 +1068,7 @@ static int egdb_close_dtw(EGDB_DRIVER *handle)
 		if (hdat->dbfiles[i].fp) {
 			close_file(hdat->dbfiles[i].fp);
 #if !CACHE_MINIBLOCK_LENGTHS
-			fclose(hdat->dbfiles[i].fp_idx);
+			std::fclose(hdat->dbfiles[i].fp_idx);
 #endif
 		}
 	}

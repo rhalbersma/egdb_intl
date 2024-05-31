@@ -291,7 +291,7 @@ void test_best_mtc_successor(wld_search *wld, EGDB_DRIVER *mtc, BOARD &pos, int 
 	build_movelist(&pos, color, &movelist);
 	status = mtc_probe(*wld, mtc, &pos, color, &movelist, &wld_value, dists);
 	if (!status || !dists.size()) {
-		printf("mtc_probe timed out (not a bug)\n");
+		std::printf("mtc_probe timed out (not a bug)\n");
 		return;
 	}
 
@@ -304,12 +304,12 @@ void test_best_mtc_successor(wld_search *wld, EGDB_DRIVER *mtc, BOARD &pos, int 
 		build_movelist(&pos, color, &movelist);
 		status = mtc_probe(*wld, mtc, &pos, color, &movelist, &wld_value, dists);
 		if (!status || !dists.size()) {
-			printf("mtc_probe timed out (not a bug)\n");
+			std::printf("mtc_probe timed out (not a bug)\n");
 			return;
 		}
 		if (dists[0].distance != plies - 1) {
-			printf("DTC depth error, expected %d, got %d\n", plies - 1, dists[0].distance);
-			exit(1);
+			std::printf("DTC depth error, expected %d, got %d\n", plies - 1, dists[0].distance);
+			std::exit(1);
 		}
 		--plies;
 	}
@@ -469,13 +469,13 @@ void parallel_read(EGDB_DRIVER *db, int &value)
 		std::thread threadobj(parallel_read, db, std::ref(value));
 		std::this_thread::sleep_for(delay_time);
         if (value != EGDB_UNKNOWN) {
-			printf("Lock did not enforce mutual exclusion.\n");
+			std::printf("Lock did not enforce mutual exclusion.\n");
 			std::exit(1);
         }
 		m->unlock();
 		threadobj.join();
 		if (value == EGDB_UNKNOWN) {
-			printf("Releasing lock did not disable mutual exclusion.\n");
+			std::printf("Releasing lock did not disable mutual exclusion.\n");
 			std::exit(1);
 		}
 		egdb_close(db);
@@ -498,7 +498,7 @@ void dtw_test(Slice &slice, wld_search &wld, dtw_search &dtw, double &sum_times,
 	else
 		incr = (std::max)(size / max_lookups, (int64_t)1);
 
-	printf("Testing slice db%d-%d%d%d%d\n", slice.npieces(), slice.nbm(), slice.nbk(), slice.nwm(), slice.nwk());
+	std::printf("Testing slice db%d-%d%d%d%d\n", slice.npieces(), slice.nbm(), slice.nbk(), slice.nwm(), slice.nwk());
 	color = BLACK;
 	for (index = 0; index < size; index += incr) {
 		int plies;
@@ -518,7 +518,7 @@ void dtw_test(Slice &slice, wld_search &wld, dtw_search &dtw, double &sum_times,
 		if (value < 0) {
 			std::string fen;
 			print_fen(&pos, color, fen);
-			printf("dtw lookup timed out, time %.3f sec (not a bug); %s\n", dtw.get_time() / 1000.0, fen.c_str());
+			std::printf("dtw lookup timed out, time %.3f sec (not a bug); %s\n", dtw.get_time() / 1000.0, fen.c_str());
 			continue;
 		}
 
@@ -537,7 +537,7 @@ void dtw_test(Slice &slice, wld_search &wld, dtw_search &dtw, double &sum_times,
 				max_nodes = dtw.get_nodes();
 			++nsamples;
 			if (verbose && (dtw.get_time() > (4 * max_time) / 5 || dtw.get_nodes() > (4 * max_nodes) / 5))
-				printf("time %.3f sec, maxdepth %d, nodes %d\n", dtw.get_time() / 1000.0, dtw.get_maxdepth(), dtw.get_nodes());
+				std::printf("time %.3f sec, maxdepth %d, nodes %d\n", dtw.get_time() / 1000.0, dtw.get_maxdepth(), dtw.get_nodes());
 
 			build_movelist(&pos, color, &movelist);
 
@@ -546,23 +546,23 @@ void dtw_test(Slice &slice, wld_search &wld, dtw_search &dtw, double &sum_times,
 			color = OTHER_COLOR(color);
 			value = dtw.lookup_with_search(&pos, color, dists);
 			if (value == dtw_search::dtw_draw) {
-				printf("Unexpected value %d from dtw lookup.\n", value);
-				exit(1);
+				std::printf("Unexpected value %d from dtw lookup.\n", value);
+				std::exit(1);
 			}
 			if (value < 0) {
-				printf("dtw lookup timed out, time %.3f sec (not a bug)\n", dtw.get_time() / 1000.0);
+				std::printf("dtw lookup timed out, time %.3f sec (not a bug)\n", dtw.get_time() / 1000.0);
 				break;
 			}
 
 			if (dists[0].distance != plies - 1) {
-				printf("DTW depth error, expected %d, got %d\n", plies - 1, dists[0].distance);
-				exit(1);
+				std::printf("DTW depth error, expected %d, got %d\n", plies - 1, dists[0].distance);
+				std::exit(1);
 			}
 			--plies;
 		}
 	}
 	if (verbose && nsamples)
-		printf("dtw avg lookup time %.2f msec, avg nodes %I64d\n", sum_times / nsamples, sum_nodes / nsamples);
+		std::printf("dtw avg lookup time %.2f msec, avg nodes %I64d\n", sum_times / nsamples, sum_nodes / nsamples);
 }
 
 
@@ -617,7 +617,7 @@ void dtw_test(void)
 		dtw_test(slice, wld, dtw, sum_times, sum_nodes, nsamples, max_nodes, max_time);
 	}
 
-	printf("max time %d msec, max nodes %d, nlookups %I64d\n", max_time, max_nodes, nsamples);
+	std::printf("max time %d msec, max nodes %d, nlookups %I64d\n", max_time, max_nodes, nsamples);
 	egdb_close(dtw_handle);
 	egdb_close(wld_handle);
 }

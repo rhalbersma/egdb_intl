@@ -7,16 +7,16 @@ int Bitbuf::open(const char *filename, Mode open_mode)
 	buffer.word64 = 0;
 	bits_in_buffer = 0;
 	if (mode == BB_WRITE) {
-		fp = fopen(filename, "wb");
+		fp = std::fopen(filename, "wb");
 		if (fp == nullptr) {
-			printf("Cannot open %s for writing\n", filename);
+			std::printf("Cannot open %s for writing\n", filename);
 			return(1);
 		}
 	}
 	if (mode == BB_READ) {
-		fp = fopen(filename, "rb");
+		fp = std::fopen(filename, "rb");
 		if (fp == nullptr) {
-			printf("Cannot open %s for reading\n", filename);
+			std::printf("Cannot open %s for reading\n", filename);
 			return(1);
 		}
 	}
@@ -34,7 +34,7 @@ int Bitbuf::write(uint32_t value, uint8_t length)
 	if (bufsize - bits_in_buffer < length) {
 
 		/* Write the upper 32 bits of the buffer to the file. */
-		status = fwrite(&buffer.word32[1], 4, 1, fp);
+		status = std::fwrite(&buffer.word32[1], 4, 1, fp);
 		if (status != 1)
 			return(1);
 
@@ -57,7 +57,7 @@ int Bitbuf::read32(uint32_t &value)
 
 		/* Read 32 bits from the file. The buffer is right-justified. */
 		buffer.word32[1] = buffer.word32[0];
-		status = fread(&buffer.word32[0], 4, 1, fp);
+		status = std::fread(&buffer.word32[0], 4, 1, fp);
 		if (status != 1)
 			return(1);
 
@@ -89,14 +89,14 @@ int Bitbuf::close(void)
 
 		/* Write the last words to the file and close it. */
 		if (bits_in_buffer >= 32) {
-			status = fwrite(&buffer.word32[1], 4, 1, fp);
-			status = fwrite(&buffer.word32[0], 4, 1, fp);
+			status = std::fwrite(&buffer.word32[1], 4, 1, fp);
+			status = std::fwrite(&buffer.word32[0], 4, 1, fp);
 		}
 		else
-			status = fwrite(&buffer.word32[1], 4, 1, fp);
+			status = std::fwrite(&buffer.word32[1], 4, 1, fp);
 	}
 
-	fclose(fp);
+	std::fclose(fp);
 	fp = nullptr;
 	return(status != 1);
 }

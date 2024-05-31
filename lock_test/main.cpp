@@ -39,7 +39,7 @@ int main()
 	for (i = 0; i < maxthreads; ++i)
 		tinfo[i].threadobj = std::thread(incfunc, (int64_t)1);
  	for (i = 0; i < maxthreads; ++i) {
-		printf("Join thread %d\n", i);
+		std::printf("Join thread %d\n", i);
 		tinfo[i].threadobj.join();
 	}
 
