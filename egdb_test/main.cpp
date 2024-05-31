@@ -1,7 +1,7 @@
 #include "builddb/indexing.h"
 #include "egdb/dtw_search.h"
 #include "egdb/egdb_intl.h"
-#include "Egdb/mtc_probe.h"
+#include "egdb/mtc_probe.h"
 #include "egdb/slice.h"
 #include "egdb/wld_search.h"
 #include "engine/bitcount.h"
@@ -40,11 +40,11 @@ using namespace egdb_interface;
 		#define C_DRIVE "/media/sf_C_DRIVE/"
 		#define E_DRIVE "/media/sf_E_DRIVE/"
 	#endif
-#define DB_RUNLEN C_DRIVE "db_intl/wld_runlen"	/* Need 6 pieces for test. */
+#define DB_RUNLEN E_DRIVE "db_intl/wld_runlen"	/* Need 6 pieces for test. */
 #define DB_TUN_V1 E_DRIVE "db_intl/wld_v1"		/* Need 7 pieces for test. */
 #define DB_TUN_V2 C_DRIVE "db_intl/wld_v2"		/* Need 8 pieces for test. */
 #define DB_MTC C_DRIVE "db_intl/mtc"			/* Need 8 pieces for test. */
-#define DB_DTW C_DRIVE "db_intl/dtw"
+#define DB_DTW E_DRIVE "db_intl/dtw"
 const int maxpieces = 8;
 #endif
 
@@ -471,7 +471,7 @@ void parallel_read(EGDB_DRIVER *db, int &value)
 		}
 		egdb_close(db);
 	}
-	
+
 #endif
 
 void dtw_test(Slice &slice, wld_search &wld, dtw_search &dtw, double &sum_times, int64_t &sum_nodes,
@@ -481,8 +481,8 @@ void dtw_test(Slice &slice, wld_search &wld, dtw_search &dtw, double &sum_times,
 	int color;
 	BOARD pos;
 	std::vector<move_distance> dists;
-
-	max_lookups = 30;
+	const bool verbose = false;
+	max_lookups = 10;
 	size = getdatabasesize_slice(slice.nbm(), slice.nbk(), slice.nwm(), slice.nwk());
 	if (max_lookups < 1)
 		incr = 1;
@@ -527,7 +527,7 @@ void dtw_test(Slice &slice, wld_search &wld, dtw_search &dtw, double &sum_times,
 			if (dtw.get_nodes() > max_nodes)
 				max_nodes = dtw.get_nodes();
 			++nsamples;
-			if (dtw.get_time() > (4 * max_time) / 5 || dtw.get_nodes() > (4 * max_nodes) / 5)
+			if (verbose && (dtw.get_time() > (4 * max_time) / 5 || dtw.get_nodes() > (4 * max_nodes) / 5))
 				printf("time %.3f sec, maxdepth %d, nodes %d\n", dtw.get_time() / 1000.0, dtw.get_maxdepth(), dtw.get_nodes());
 
 			build_movelist(&pos, color, &movelist);
@@ -552,7 +552,7 @@ void dtw_test(Slice &slice, wld_search &wld, dtw_search &dtw, double &sum_times,
 			--plies;
 		}
 	}
-	if (nsamples)
+	if (verbose && nsamples)
 		printf("dtw avg lookup time %.2f msec, avg nodes %I64d\n", sum_times / nsamples, sum_nodes / nsamples);
 }
 

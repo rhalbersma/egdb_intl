@@ -39,6 +39,14 @@
 	}
 
 	inline
+	int get_mem_available_kb(void)
+	{
+		MEMORYSTATUS memstat;
+		GlobalMemoryStatus(&memstat);
+		return((int)(memstat.dwAvailPhys / (1024)));
+	}
+
+	inline
 	bool check_cpu_has_popcount()
 	{
 		int cpuinfo[4] = { -1 };
@@ -75,6 +83,12 @@
 	}
 
 	inline
+	int get_mem_available_kb(void)
+	{
+		return (int)(sysconf(_SC_PHYS_PAGES) * sysconf(_SC_PAGESIZE) / (1024));
+	}
+
+	inline
 	bool check_cpu_has_popcount()
 	{
 		return __builtin_cpu_supports("popcnt");
@@ -101,7 +115,7 @@
 			return VirtualAlloc(0, size, MEM_COMMIT, PAGE_READWRITE);
 		}
 
-		inline 
+		inline
 		void virtual_free(void *ptr)
 		{
 			VirtualFree(ptr, 0, MEM_RELEASE);
@@ -164,7 +178,7 @@
 
 	#include <cassert>
 	#include <stdint.h>
-	
+
 	namespace egdb_interface {
 
 	typedef HANDLE		FILE_HANDLE;
@@ -322,7 +336,7 @@
 
 	namespace egdb_interface {
 
-	inline 
+	inline
 	int bit_scan_forward(uint32_t x)
 	{
 		unsigned long bitpos;
@@ -356,7 +370,7 @@
 
 		namespace egdb_interface {
 
-		inline 
+		inline
 		int bit_scan_forward64(uint64_t x)
 		{
 			unsigned long bitpos;
@@ -367,7 +381,7 @@
 				return(0);
 		}
 
-		inline 
+		inline
 		int bit_scan_reverse64(uint64_t x)
 		{
 			unsigned long bitpos;
@@ -388,7 +402,7 @@
 
 	#endif
 
-#else 
+#else
 
 	#include <stdint.h>
 
@@ -451,8 +465,8 @@
 	#include <string.h>
 
 	namespace egdb_interface {
-	
-	inline 
+
+	inline
 	int strcasecmp(char const *a, char const *b) { return _stricmp(a, b); }
 
 	}	// namespace
@@ -460,5 +474,38 @@
 #else
 
 	#include<string.h>	// provides strcasecmp
+
+#endif
+
+// -------
+// Timer
+// -------
+
+#ifdef _MSC_VER
+
+	#include <intrin.h>
+	#include <Windows.h>
+
+	inline
+	uint32_t get_tick_count()
+	{
+		return GetTickCount();
+	}
+
+#else
+
+	#include <unistd.h>
+	#include <time.h>
+
+	inline
+	uint32_t get_tick_count()
+	{
+		struct timespec ts;
+		unsigned theTick = 0U;
+		clock_gettime( CLOCK_REALTIME, &ts );
+		theTick  = ts.tv_nsec / 1000000;
+		theTick += ts.tv_sec * 1000;
+		return theTick;
+	}
 
 #endif

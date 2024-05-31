@@ -11,17 +11,22 @@
 #include "engine/bool.h"
 #include "engine/project.h"
 #include "engine/reverse.h"
-#include "Engine/timer.h"
+#include "engine/timer.h"
 #include "Huffman/huffman.h"
 #include "Packed_array/Packed_array.h"
 #include "Re-pair/repair.h"
 #include <algorithm>
+#include <cassert>
 #include <cctype>
+#include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
 #include <utility>
+
+#undef min
+#undef max
 
 namespace egdb_interface {
 
@@ -80,7 +85,7 @@ typedef struct {
 	char pieces;			/* number of pieces in this db file. */
 	char name[20];			/* db filename prefix. */
 	int num_cacheblocks;	/* number of cache blocks in this db file. */
-	HANDLE fp;
+	FILE_HANDLE fp;
 	int *cache_bufferi;		/* An array of indices into ccbs[], indexed by block number. */
 #if !CACHE_MINIBLOCK_LENGTHS
 	FILE *fp_idx;			/* handle to index file. */
@@ -197,25 +202,22 @@ static EGDB_STATS *get_db_stats(EGDB_DRIVER *handle)
 
 static void read_blocknum_from_file(DBHANDLE *hdat, CCB *ccb)
 {
-	I64_HIGH_LOW filepos;
-	DWORD bytes_read;
-	BOOL stat;
-
-	filepos.word64 = (int64_t)ccb->blocknum * CACHE_BLOCKSIZE;
+	DWORD_T bytes_read;
+	BOOL_T stat;
 
 	/* Seek the start position. */
-	if (SetFilePointer(ccb->subdb->file->fp, filepos.words32.low32, (long *)&filepos.words32.high32, FILE_BEGIN) == -1) {
+	if (set_file_pointer(ccb->subdb->file->fp, (int64_t)ccb->blocknum * CACHE_BLOCKSIZE) == -1) {
 		(*hdat->log_msg_fn)("seek failed\n");
 		return;
 	}
-	stat = ReadFile(ccb->subdb->file->fp, ccb->data, CACHE_BLOCKSIZE, &bytes_read, NULL);
+	stat = read_from_file(ccb->subdb->file->fp, ccb->data, CACHE_BLOCKSIZE, &bytes_read);
 	if (!stat)
 		(*hdat->log_msg_fn)("Error reading file\n");
 }
 
 
 /*
- * Return the maximum number of cacheblocks that could be used if 
+ * Return the maximum number of cacheblocks that could be used if
  * we had unlimited ram.
  */
 static int needed_cache_buffers(DBHANDLE *hdat)
@@ -320,17 +322,17 @@ int decode(uint32_t target_index, uint8_t *datap, CPRSUBDB *subdb)
  * The depth returned is the real depth divided by 2. To convert to the actual depth,
  * multiply by 2, and add 1 if the position is a win.
  * If the value is not already in a cache buffer, the action depends on
- * the argument cl.  If cl is true, DB_NOT_IN_CACHE is returned, 
+ * the argument cl.  If cl is true, DB_NOT_IN_CACHE is returned,
  * otherwise the disk block is read and cached and the value is obtained.
  */
 static int dblookup(EGDB_DRIVER *handle, EGDB_POSITION const *p, int color, int cl)
 {
 	DBHANDLE *hdat = (DBHANDLE *)handle->internal_data;
-	UINT32 index;
+	uint32_t index;
 	int64_t index64;
 	int bm, bk, wm, wk;
 	int subslicenum;
-	int idx_blocknum;	
+	int idx_blocknum;
 	int blocknum;
 	INDEX *indices;
 	EGDB_POSITION revpos;
@@ -407,7 +409,7 @@ static int dblookup(EGDB_DRIVER *handle, EGDB_POSITION const *p, int color, int 
 	CCB *ccbp;
 	uint32_t first_miniblock;
 
-	/* We know the index and the database, so look in 
+	/* We know the index and the database, so look in
 	 * the indices array to find the right index block.
 	 */
 	indices = &dbpointer->indices[0];
@@ -496,7 +498,7 @@ static DBFILE *find_file_in_table(DBHANDLE *hdat, char *name)
 
 /*
  * Open the endgame db driver for the slice32 database.
- * 
+ *
  * pieces is the maximum number of pieces to do lookups for.
  * cache_mb is the amount of ram to use for the driver, in bytes * 1E6.
  * filepath is the path to the database files.
@@ -513,13 +515,11 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int cache_mb, const char *fi
 	int64_t allocated_bytes;		/* keep track of heap allocations in bytes. */
 	int cache_mb_avail;
 	int64_t total_dbsize;
-	SIZE_T size;
+	std::size_t size;
 	int count;
-	SYSTEM_INFO sysinfo;
-	MEMORYSTATUS memstat;
 	unsigned char *blockp;		/* Base address of an allocate group of cache buffers. */
 
-	t0 = GetTickCount();
+	t0 = get_tick_count();
 
 	/* Save off some global data. */
 	strcpy(hdat->db_filepath, filepath);
@@ -534,9 +534,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int cache_mb, const char *fi
 	allocated_bytes = 0;
 
 	/* Get the pagesize info. */
-	GetSystemInfo(&sysinfo);
-	GlobalMemoryStatus(&memstat);
-	sprintf(msg, "There are %zd kbytes of ram available.\n", memstat.dwAvailPhys / 1024);
+	sprintf(msg, "There are %d kbytes of ram available.\n", get_mem_available_kb());
 	(*hdat->log_msg_fn)(msg);
 
 	init_bitcount();
@@ -585,7 +583,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int cache_mb, const char *fi
 	}
 
 	/* End of reading index files. */
-	t1 = GetTickCount();
+	t1 = get_tick_count();
 	sprintf(msg, "Reading index files took %d secs\n", (t1 - t0) / 1000);
 	(*hdat->log_msg_fn)(msg);
 
@@ -612,7 +610,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int cache_mb, const char *fi
 
 		sprintf(dbname, "%s%s.cpr_dtw", hdat->db_filepath, hdat->dbfiles[i].name);
 		hdat->dbfiles[i].fp = open_file(dbname);
-		if (hdat->dbfiles[i].fp == INVALID_HANDLE_VALUE) {
+		if (!hdat->dbfiles[i].fp) {
 			sprintf(msg, "Cannot open %s\n", dbname);
 			(*hdat->log_msg_fn)(msg);
 			return(1);
@@ -644,15 +642,15 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int cache_mb, const char *fi
 			/* We need more memory than he gave us, allocate 10mb of cache
 			 * buffers if we can use that many.
 			 */
-			hdat->cacheblocks = min(MIN_CACHE_BUF_BYTES / CACHE_BLOCKSIZE, i);
+			hdat->cacheblocks = std::min(MIN_CACHE_BUF_BYTES / CACHE_BLOCKSIZE, i);
 			sprintf(msg, "Allocating the minimum %d cache buffers\n",
 							hdat->cacheblocks);
 			(*hdat->log_msg_fn)(msg);
 		}
 		else {
-			hdat->cacheblocks = (int)(((int64_t)cache_mb * (int64_t)ONE_MB - (int64_t)allocated_bytes) / 
+			hdat->cacheblocks = (int)(((int64_t)cache_mb * (int64_t)ONE_MB - (int64_t)allocated_bytes) /
 					(int64_t)(CACHE_BLOCKSIZE + sizeof(CCB)));
-			hdat->cacheblocks = min(hdat->cacheblocks, i);
+			hdat->cacheblocks = std::min(hdat->cacheblocks, i);
 		}
 
 		/* Allocate the CCB array. */
@@ -684,12 +682,10 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int cache_mb, const char *fi
 
 		/* Allocate the cache buffers in groups of CACHE_ALLOC_COUNT at a time. */
 		for (i = 0; i < hdat->cacheblocks; i += CACHE_ALLOC_COUNT) {
-			count = min(CACHE_ALLOC_COUNT, hdat->cacheblocks - i);
+			count = std::min(CACHE_ALLOC_COUNT, hdat->cacheblocks - i);
 			size = count * CACHE_BLOCKSIZE * sizeof(unsigned char);
-			blockp = (unsigned char *)VirtualAlloc(0, size, MEM_COMMIT, PAGE_READWRITE);
+			blockp = (unsigned char *)aligned_large_alloc(size);
 			if (blockp == NULL) {
-				GlobalMemoryStatus(&memstat);
-				i = GetLastError();
 				(*hdat->log_msg_fn)("ERROR: VirtualAlloc failure on cache buffers\n");
 				return(-1);
 			}
@@ -699,15 +695,14 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int cache_mb, const char *fi
 				hdat->ccbs[i + j].data = blockp + j * CACHE_BLOCKSIZE * sizeof(unsigned char);
 		}
 
-		t3 = GetTickCount();
+		t3 = get_tick_count();
 		sprintf(msg, "Egdb init took %d sec total\n", (t3 - t0) / 1000);
 		(*hdat->log_msg_fn)(msg);
 	}
 	else
 		hdat->cacheblocks = 0;
 
-	GlobalMemoryStatus(&memstat);
-	sprintf(msg, "There are %zd kbytes of ram available.\n", memstat.dwAvailPhys / 1024);
+	sprintf(msg, "There are %d kbytes of ram available.\n", get_mem_available_kb());
 	(*hdat->log_msg_fn)(msg);
 
 	return(0);
@@ -718,7 +713,7 @@ static int initdblookup(DBHANDLE *hdat, int pieces, int cache_mb, const char *fi
  * Parse an index file and write all information in cprsubdatabase[].
  * A nonzero return value means some kind of error occurred.
  *
- * Index file layout (subdb header [subdb header, ...])		
+ * Index file layout (subdb header [subdb header, ...])
  *
  * subdb header: (uint8 npieces, uint8 nbm, uint8 nbk, uint8 nwm, uint8 nwk, uint8 color, uint16 subslicenum)
  * number of repair symbols (uint16_t)
@@ -743,16 +738,16 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int64_t *allocated_bytes)
 	int total_minis;
 	CPRSUBDB *dbpointer, *prev;
 	int64_t filesize;
-	HANDLE cprfp;
+	FILE_HANDLE cprfp;
 	DBP *dbp;
 	const bool verbose = false;
 
 	/* Open the compressed data file. */
 	sprintf(name, "%s%s.cpr_dtw", hdat->db_filepath, f->name);
 	cprfp = open_file(name);
-	if (cprfp == INVALID_HANDLE_VALUE) {
+	if (!cprfp) {
 
-		/* We can't find the compressed data file.  Its ok as long as 
+		/* We can't find the compressed data file.  Its ok as long as
 		 * this is for more pieces than SAME_PIECES_ONE_FILE pieces.
 		 */
 		if (f->pieces > SAME_PIECES_ONE_FILE) {
@@ -796,7 +791,7 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int64_t *allocated_bytes)
 	total_minis = 0;
 	while (1) {
 
-		/* Read the subslice info: 
+		/* Read the subslice info:
 		 * (uint8 npieces, uint8 nbm, uint8 nbk, uint8 nwm, uint8 nwk, uint8 color, uint16 subslicenum)
 		 */
 		if (fread(&subslice, sizeof(subslice), 1, fp) != 1)
@@ -968,7 +963,7 @@ static int parseindexfile(DBHANDLE *hdat, DBFILE *f, int64_t *allocated_bytes)
 					"\tnum idx blocks %d\n"
 					"\tnum miniblocks %zd\n",
 			subslice[0], nbm, nbk, nwm, nwk, subslice_num, color == EGDB_BLACK ? 'b' : 'w',
-				dbpointer->first_idx_block, dbpointer->first_miniblock, 
+				dbpointer->first_idx_block, dbpointer->first_miniblock,
 				dbpointer->num_idx_blocks, dbpointer->miniblock_lengths.size());
 #if !CACHE_MINIBLOCK_LENGTHS
 		dbpointer->miniblock_lengths.clear();
@@ -999,7 +994,7 @@ static void build_file_table(DBHANDLE *hdat, int maxpieces, int maxpiece, int sa
 	DBFILE file;
 
 	file.cache_bufferi = nullptr;
-	file.fp = INVALID_HANDLE_VALUE;
+	file.fp = nullptr;
 	file.fp_idx = nullptr;
 	file.is_present = 0;
 	file.num_cacheblocks = 0;
@@ -1008,7 +1003,7 @@ static void build_file_table(DBHANDLE *hdat, int maxpieces, int maxpiece, int sa
 		if (npieces <= same_pieces_one_file) {
 			sprintf(file.name, "db%d", npieces);
 			file.pieces = npieces;
-			file.fp = INVALID_HANDLE_VALUE;
+			file.fp = nullptr;
 			file.cache_bufferi = nullptr;
 			hdat->dbfiles.push_back(file);
 		}
@@ -1031,7 +1026,7 @@ static void build_file_table(DBHANDLE *hdat, int maxpieces, int maxpiece, int sa
 						sprintf(file.name, "db%d-%d%d%d%d",
 							npieces, nbm, nbk, nwm, nwk);
 						file.pieces = npieces;
-						file.fp = INVALID_HANDLE_VALUE;
+						file.fp = nullptr;
 						file.cache_bufferi = nullptr;
 						hdat->dbfiles.push_back(file);
 					}
@@ -1054,7 +1049,7 @@ static int egdb_close_dtw(EGDB_DRIVER *handle)
 	if (hdat->ccbs) {
 		for (i = 0; i < hdat->cacheblocks; i += CACHE_ALLOC_COUNT) {
 			if (hdat->ccbs[i].data)
-				VirtualFree(hdat->ccbs[i].data, 0, MEM_RELEASE);
+				virtual_free(hdat->ccbs[i].data);
 		}
 
 		/* Free the cache control blocks. */
@@ -1073,7 +1068,7 @@ static int egdb_close_dtw(EGDB_DRIVER *handle)
 			hdat->dbfiles[i].cache_bufferi = 0;
 		}
 
-		if (hdat->dbfiles[i].fp != INVALID_HANDLE_VALUE) {
+		if (hdat->dbfiles[i].fp) {
 			close_file(hdat->dbfiles[i].fp);
 #if !CACHE_MINIBLOCK_LENGTHS
 			fclose(hdat->dbfiles[i].fp_idx);
@@ -1183,7 +1178,7 @@ static int get_pieces(EGDB_DRIVER const *handle, int *max_pieces, int *max_piece
 
 	*max_pieces = 0;
 	*max_pieces_1side = 0;
-	if (!handle) 
+	if (!handle)
 		return(0);
 
 	for (i = 0; i < hdat->dbfiles.size(); ++i) {
@@ -1195,7 +1190,7 @@ static int get_pieces(EGDB_DRIVER const *handle, int *max_pieces, int *max_piece
 		if (f->pieces > *max_pieces)
 			*max_pieces = f->pieces;
 	}
-	*max_pieces_1side = min(MAXPIECE, *max_pieces - 1);
+	*max_pieces_1side = std::min(MAXPIECE, *max_pieces - 1);
 	return(0);
 }
 

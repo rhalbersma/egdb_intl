@@ -45,9 +45,9 @@ public:
 		return egdb_verify(handle_, msg_fn, abort, msgs);
 	}
 
-	int get_pieces(int *max_pieces, int *max_pieces_1side, int *max_9pc_kings, int *max_8pc_kings_1side)
+	int get_pieces(int *max_pieces, int *max_pieces_1side)
 	{
-		return egdb_get_pieces(handle_, max_pieces, max_pieces_1side, max_9pc_kings, max_8pc_kings_1side);
+		return egdb_get_pieces(handle_, max_pieces, max_pieces_1side);
 	}
 
 	EGDB_STATS *get_stats() const

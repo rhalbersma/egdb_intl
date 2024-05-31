@@ -58,7 +58,7 @@ bool is_majority_half_zugzwang(int score_to_move, int score_not_tomove)
 void query_zugzwangs(EGDB_Driver *handle, int maxpieces)
 {
     char fenbuf[150];
-    
+
     std::clock_t const t0 = std::clock();
 	auto const slices = slice_range(2, maxpieces + 1);
 	std::cout << "Iterating over " << slices.size() << " slices\n";
@@ -103,8 +103,6 @@ void query_zugzwangs(EGDB_Driver *handle, int maxpieces)
 
 int main()
 {
-    init_move_tables(); // Needed to use the Kingsrow move generator
-
     const int maxpieces = 4;
     char options[50];
     std::sprintf(options, "maxpieces=%d", maxpieces);

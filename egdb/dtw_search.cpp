@@ -3,6 +3,7 @@
 #include "engine/board.h"
 #include "engine/move_api.h"
 #include <algorithm>
+#include <cassert>
 
 namespace egdb_interface {
 
@@ -32,7 +33,7 @@ int dtw_search::search(BOARD *board, int color, int depth, int maxdepth, int exp
 	}
 	else
 		capture = true;
-	
+
 	if (depth >= maxdepth)
 		return(dtw_unknown);
 
@@ -114,7 +115,7 @@ int dtw_search::lookup_with_search(BOARD *board, int color, std::vector<move_dis
 		movecount = build_jump_list<false>(board, &movelist, color);
 	else
 		movecount = build_nonjump_list(board, &movelist, color);
-	
+
 	if (movecount == 0)
 		return(0);
 

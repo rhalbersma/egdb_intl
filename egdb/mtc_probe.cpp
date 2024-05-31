@@ -1,11 +1,9 @@
-#pragma once
-
-#include "Egdb/dtw_search.h"
+#include "egdb/dtw_search.h"
 #include "egdb/egdb_intl.h"
 #include "egdb/wld_search.h"
-#include "Engine/bitcount.h"
+#include "engine/bitcount.h"
 #include "engine/board.h"
-#include "Engine/Move_api.h"
+#include "engine/move_api.h"
 #include <algorithm>
 #include <time.h>
 #include <vector>

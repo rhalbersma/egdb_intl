@@ -1,5 +1,6 @@
 #pragma once
 #include "egdb/platform.h"
+#include <cassert>
 #include <stdint.h>
 
 namespace egdb_interface {

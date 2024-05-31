@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Engine/project.h"
+#include "engine/project.h"
 
 namespace egdb_interface {
 

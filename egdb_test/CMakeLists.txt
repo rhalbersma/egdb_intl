@@ -9,17 +9,19 @@ set_target_properties(${t}.main PROPERTIES
     CXX_STANDARD_REQUIRED YES
 )
 
-file(GLOB_RECURSE source_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} 
-    ../builddb/*.cpp 
-    ../egdb/*.cpp 
+file(GLOB_RECURSE source_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    ../builddb/*.cpp
+    ../egdb/*.cpp
     ../engine/*.cpp
+    ../Huffman/*.cpp
+    ../Re-pair/*.cpp
 )
 
 target_sources(${t}.main PRIVATE
     ${source_files}
 )
 
-target_include_directories(${t}.main PRIVATE 
+target_include_directories(${t}.main PRIVATE
     ${PROJECT_SOURCE_DIR}
 )
 

@@ -1,11 +1,11 @@
 #pragma once
 
-#include "Egdb/distance.h"
-#include "Egdb/dtw_search.h"
+#include "egdb/distance.h"
+#include "egdb/dtw_search.h"
 #include "egdb/egdb_intl.h"
 #include "egdb/wld_search.h"
 #include "engine/board.h"
-#include "Engine/Move_api.h"
+#include "engine/move_api.h"
 #include <vector>
 
 namespace egdb_interface {

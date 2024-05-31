@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Egdb/distance.h"
+#include "egdb/distance.h"
 #include "egdb/egdb_intl.h"
 #include "egdb/wld_search.h"
 #include "engine/board.h"
