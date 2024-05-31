@@ -28,7 +28,7 @@ using namespace egdb_interface;
 
 #define FAST_TEST_MULT 1		/* Set to 5 to speed up the tests. */
 
-//#define EYG
+#define EYG
 #ifdef EYG
 
 #define HAVE_RUNLEN 1
@@ -51,7 +51,7 @@ using namespace egdb_interface;
 const int maxpieces = 8;
 #endif
 
-#define RH
+//#define RH
 #ifdef RH
 
 	#define HAVE_RUNLEN 0
@@ -625,13 +625,14 @@ void dtw_test(void)
 
 int main(int argc, char *argv[])
 {
-	DB_INFO db1, db2;
+	DB_INFO db1;
 	clock_t t0;
 
 	dtw_test();
 	if (identify(DB_TUN_V2, &db1))
 		return(1);
 #if HAVE_TUN_V1
+	DB_INFO db2;
 	if (identify(DB_TUN_V1, &db2))
 		return(1);
 #endif
